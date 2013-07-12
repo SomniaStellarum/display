@@ -3,6 +3,7 @@ package display
 import (
 	"code.google.com/p/draw2d/draw2d"
 	"github.com/BurntSushi/xgbutil"
+	"github.com/BurntSushi/xgbutil/keybind"
 	"github.com/BurntSushi/xgbutil/xevent"
 	"github.com/BurntSushi/xgbutil/xgraphics"
 	"github.com/BurntSushi/xgbutil/xwindow"
@@ -11,6 +12,7 @@ import (
 )
 
 type Display struct {
+	x *xgbutil.XUtil
 	gc   *draw2d.ImageGraphicContext
 	ximg *xgraphics.Image
 	wid  *xwindow.Window
@@ -30,6 +32,7 @@ func NewDisplay(width, height, border, heading int, name string) (*Display, erro
 	if err != nil {
 		return nil, err
 	}
+	keybind.Initialize(X)
 	d.ximg = xgraphics.New(X, image.Rect(
 		0,
 		0,
@@ -46,10 +49,22 @@ func NewDisplay(width, height, border, heading int, name string) (*Display, erro
 	d.gc.SetFillColor(color.White)
 	d.gc.Clear()
 	d.wid = d.ximg.XShowExtra(name, true)
+	d.x = X
 	go func() {
 		xevent.Main(X)
 	}()
 	return d, nil
+}
+
+func (d *Display) NewKeyBinding(f func(), key string) error {
+	err := keybind.KeyReleaseFun(
+		func(X *xgbutil.XUtil, e xevent.KeyReleaseEvent) {
+			f()
+	}).Connect(d.x, d.x.RootWin(), key, true)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (d *Display) SetHeadingText(text string) {
@@ -98,4 +113,8 @@ func (p *Particle) Move(x, y float64) {
 	p.x = x
 	p.y = y
 	p.disp.Draw(p.x, p.y, p.r, p.c)
+}
+
+func (p *Particle) ChangeColor(c color.Color) {
+	p.c = c
 }
