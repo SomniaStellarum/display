@@ -1,7 +1,7 @@
 package display
 
 import (
-	"code.google.com/p/draw2d/draw2d"
+	"github.com/llgcode/draw2d"
 	"github.com/BurntSushi/xgbutil"
 	"github.com/BurntSushi/xgbutil/keybind"
 	"github.com/BurntSushi/xgbutil/xevent"
